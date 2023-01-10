@@ -1,8 +1,6 @@
 import PySimpleGUI as sg
-import numpy as np
-import pprint
 
-from game import Utils, State
+from game import State
 from exceptions import GameException
 
 
@@ -15,7 +13,7 @@ X_WON_BACKGROUND_COLOR = 'lightpink'
 O_WON_BACKGROUND_COLOR = 'skyblue' # cornflowerblue
 WIDTH = 3
 FONT_SIZE = 25
-NEXTG_COLOR = 'lightgreen'
+NEXT_AREA_COLOR = 'lightgreen'
 X_TURN_STR = 'Player 1 turn as X'
 O_TURN_STR = 'Player 2 turn as O'
 PAD = 12
@@ -75,6 +73,26 @@ class GraphicInterface():
                     text_color,
                     bkg_color
                 )
+    
+    def update_all_areas_colors(self):
+        for x in range(3):
+            for y in range(3):
+                state_of_area = self.state.area[x, y]
+                if state_of_area == 0:
+                    self.update_area_color((x, y), None, BACKGROUND_COLOR)
+                else:
+                    bkg_color_won = X_WON_BACKGROUND_COLOR if state_of_area == 1 else O_WON_BACKGROUND_COLOR
+                    self.update_area_color((x, y), None, bkg_color_won)
+
+        # change next area color
+        if self.state.next_area is not None:
+            self.update_area_color(self.state.next_area, None, NEXT_AREA_COLOR)
+        else:
+            for x in range(3):
+                for y in range(3):
+                    state_of_area = self.state.area[x, y]
+                    if state_of_area == 0:
+                        self.update_area_color((x, y), None, NEXT_AREA_COLOR)
 
     def play(self, xyij):
         x, y, i, j = xyij 
@@ -87,16 +105,7 @@ class GraphicInterface():
                 xyij, X_CHAR if self.state.next_player==2 else O_CHAR)
             self.update_button_color(
                 xyij, X_COLOR if self.state.next_player==2 else O_COLOR, None)
-            # change color of played area to default or win color
-            state_of_area = self.state.area[x, y]
-            if state_of_area == 0:
-                self.update_area_color((x, y), None, BACKGROUND_COLOR)
-            else:
-                bkg_color_won = X_WON_BACKGROUND_COLOR if state_of_area == 1 else O_WON_BACKGROUND_COLOR
-                self.update_area_color((x, y), None, bkg_color_won)
-            # change next area color
-            if self.state.next_area is not None:
-                self.update_area_color(self.state.next_area, None, NEXTG_COLOR)
+            self.update_all_areas_colors()
             # update texts
             self.window['textPlayerTurn'].update(X_TURN_STR if self.state.next_player==1 else O_TURN_STR)
             self.window['textException'].update('')
