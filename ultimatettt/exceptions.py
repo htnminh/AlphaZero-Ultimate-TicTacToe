@@ -4,7 +4,7 @@ class GameException(Exception):
 
 class BoardWonException(GameException):
     def __init__(self, board):
-        message = f'Player {board} already won, please restart the game'    
+        message = f'Player {board} already won, please start a new game'    
         super().__init__(message)
 
 
