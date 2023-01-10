@@ -156,6 +156,16 @@ class TestUtils(unittest.TestCase):
             [1, 2, 1],
             [2, 2, 0]
         ])), 0)
+
+    # TODO: fix name
+    def test_check_win_bug(self):
+        self.assertEqual(self.utils.check_win(np.array([
+            [0, 0, 2],
+            [0, 0, 2],
+            [0, 0, 1]
+        ])), 0)
+
+    # TODO
         
 
 if __name__ == '__main__':
