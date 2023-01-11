@@ -12,11 +12,11 @@ BACKGROUND_COLOR = 'white'
 X_WON_BACKGROUND_COLOR = 'lightpink'
 O_WON_BACKGROUND_COLOR = 'skyblue' # cornflowerblue
 WIDTH = 3
-FONT_SIZE = 25
+FONT_SIZE = 22
 NEXT_AREA_COLOR = 'lightgreen'
 X_TURN_STR = 'Player 1 turn as X'
 O_TURN_STR = 'Player 2 turn as O'
-PAD = 12
+PAD = 11
 
 
 class GraphicInterface():
