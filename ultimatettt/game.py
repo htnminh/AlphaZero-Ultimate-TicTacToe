@@ -10,11 +10,11 @@ class Utils():
         pass
 
     def check_win_array(self, array):
-        # array == [1, 1, 1] or [2, 2, 2] -> 1 or 2 respectively, else 0
+        # array == [1, 1, 1] or [2, 2, 2] -> 1 or 2 respectively, else -1
         first_entry = array[0]
-        if np.all(array == first_entry) and first_entry != 0:
+        if np.all(array == first_entry) and first_entry > 0:
             return first_entry
-        return 0
+        return -1
 
     def check_win_arrays(self, arrays):
         # if any of the arrays is won, return the winner
@@ -32,9 +32,17 @@ class Utils():
             np.stack([array.diagonal(), np.fliplr(array).diagonal()])
         )
 
-    def check_win(self, array):
+    def check_filled(self, array):
+        # check if an array is filled (all entries != -1), return 0 if so
+        return 0 if np.all(array != -1) else -1
+
+    def check_determined(self, array):
         # check win of a 2d array
-        return self.check_win_row_col(array) or self.check_win_diagonal(array)
+        return max(
+            self.check_filled(array),
+            self.check_win_row_col(array),
+            self.check_win_diagonal(array)
+        )
 
     def xyij_to_mn(self, xyij):
         # return a printable 2 dimensional index of a 4 dimensional index
@@ -49,8 +57,8 @@ class Utils():
         return m // 3, n // 3, m % 3, n % 3
 
     def player_int_to_str(self, player_int, not_played_str, player_1_str, player_2_str):
-        # 0 -> ' ', 1 -> 'X', 2 -> 'O'
-        return not_played_str if player_int == 0 \
+        # -1 -> ' ', 1 -> 'X', 2 -> 'O'
+        return not_played_str if player_int == -1 \
             else player_1_str if player_int == 1 \
             else player_2_str
 
@@ -85,14 +93,15 @@ class Utils():
 class State():
     def __init__(self):
         # board entries:
-        # 0: playable/win-TBD
+        # -1: playable/win-TBD
+        # 0: draw
         # 1: X (player 1) played/won
         # 2: O (player 2) played/won
 
         # self.cell = np.zeros((3, 3, 3, 3), dtype=int)
-        self.cell = np.zeros((3, 3, 3, 3))
-        self.area = np.zeros((3, 3), dtype=int)
-        self.board = 0
+        self.cell = np.full((3, 3, 3, 3), -1, dtype=int)
+        self.area = np.full((3, 3), -1, dtype=int)
+        self.board = -1
 
         self.next_area = None
         self.next_player = 1
@@ -110,30 +119,30 @@ class State():
             info_2 + seperator
 
     def change_win_state(self, x, y, i, j):
-        area_state = Utils().check_win(self.cell[x, y])
-        if area_state != 0:
+        area_state = Utils().check_determined(self.cell[x, y])
+        if area_state >= 0:
             self.area[x, y] = area_state
-            self.board = Utils().check_win(self.area)
+            self.board = Utils().check_determined(self.area)
 
     def play(self, xyij):
         x, y, i, j = xyij
 
-        if self.board != 0:
+        if self.board >= 0:
             raise BoardWonException(self.board)
 
-        if self.area[x, y] != 0:
+        if self.area[x, y] >= 0:
             raise AreaWonException((x, y))
 
         if self.next_area is not None and self.next_area != (x, y):
             raise AreaWrongException(self.next_area, (x, y))
 
-        if self.cell[x, y, i, j] != 0:
+        if self.cell[x, y, i, j] >= 0:
             raise CellPlayedException(xyij)
 
         self.cell[x, y, i, j] = self.next_player
         self.change_win_state(x, y, i, j)
         self.next_player = 3 - self.next_player  # 2->1, 1->2
-        if self.area[i, j] == 0:
+        if self.area[i, j] == -1:
             self.next_area = (i, j)
         else:
             self.next_area = None

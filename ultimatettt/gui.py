@@ -11,6 +11,7 @@ O_COLOR = 'blue'
 BACKGROUND_COLOR = 'white'
 X_WON_BACKGROUND_COLOR = 'lightpink'
 O_WON_BACKGROUND_COLOR = 'skyblue'
+DRAW_BACKGROUND_COLOR = 'yellow'
 WIDTH = 3
 FONT_SIZE = 22
 NEXT_AREA_COLOR = 'lightgreen'
@@ -20,7 +21,10 @@ PAD = 11
 
 
 class GraphicInterface():
-    def __init__(self):
+    def __init__(self, full_gui=True):
+        # if set full_gui to False, shows a simpler GUI for report
+        self.full_gui = full_gui
+
         self.state = State()
         self.layout = self.create_layout()
         self.window = self.create_window('Ultimate Tic-Tac-Toe')
@@ -42,10 +46,13 @@ class GraphicInterface():
                         )
                 layout[x][y] = sg.Frame('', layout[x][y], pad=PAD, border_width=0)
         
-        layout.append([sg.Text(X_TURN_STR, key='textPlayerTurn')])
-        layout.append([sg.Text('', key='textException')])
+        layout.append([sg.Text(X_TURN_STR, key='textPlayerTurn', visible=self.full_gui)])
+        layout.append([sg.Text('', key='textException', visible=self.full_gui)])
 
-        layout.insert(0, [sg.Button('New game'), sg.Button('Exit')])
+        layout.insert(0,
+            [sg.Button('New game', visible=self.full_gui),
+            sg.Button('Exit', visible=self.full_gui)]
+        )
         # a temporary fix for a bug where the first button of a layout is highlighted
         # no matter what button the user clicks
         layout.insert(0, [sg.Frame('', [[sg.Button()]], visible=False)])
@@ -78,8 +85,10 @@ class GraphicInterface():
         for x in range(3):
             for y in range(3):
                 state_of_area = self.state.area[x, y]
-                if state_of_area == 0:
+                if state_of_area == -1:
                     self.update_area_color((x, y), None, BACKGROUND_COLOR)
+                elif state_of_area == 0:
+                    self.update_area_color((x, y), None, DRAW_BACKGROUND_COLOR)
                 else:
                     bkg_color_won = X_WON_BACKGROUND_COLOR if state_of_area == 1 else O_WON_BACKGROUND_COLOR
                     self.update_area_color((x, y), None, bkg_color_won)
@@ -91,7 +100,7 @@ class GraphicInterface():
             for x in range(3):
                 for y in range(3):
                     state_of_area = self.state.area[x, y]
-                    if state_of_area == 0:
+                    if state_of_area == -1:
                         self.update_area_color((x, y), None, NEXT_AREA_COLOR)
 
     def play(self, xyij):
@@ -126,6 +135,8 @@ class GraphicInterface():
             elif event.startswith('cell'):
                 xyij = tuple(map(int, event[-4:]))
                 self.play(xyij)
+                
+                # print(self.state)
 
 
 if __name__ == '__main__':
