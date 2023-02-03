@@ -130,28 +130,28 @@ class TestUtils(unittest.TestCase):
 
     
     def test_check_win_1_won(self):
-        self.assertEqual(self.utils.check_determined(np.array([
+        self.assertEqual(self.utils.check_win(np.array([
             [0, 0, 2],
             [1, 1, 1],
             [2, 2, 1]
         ])), 1)
 
     def test_check_win_2_won(self):
-        self.assertEqual(self.utils.check_determined(np.array([
+        self.assertEqual(self.utils.check_win(np.array([
             [0, 0, 2],
             [1, 2, 1],
             [2, 2, 1]
         ])), 2)
 
     def test_check_win_no_won_1st(self):
-        self.assertEqual(self.utils.check_determined(np.array([
+        self.assertEqual(self.utils.check_win(np.array([
             [0, 0, 2],
             [1, 0, 1],
             [2, 2, 1]
         ])), 0)
 
     def test_check_win_no_won_2nd(self):
-        self.assertEqual(self.utils.check_determined(np.array([
+        self.assertEqual(self.utils.check_win(np.array([
             [1, 0, 1],
             [1, 2, 1],
             [2, 2, 0]
@@ -159,7 +159,7 @@ class TestUtils(unittest.TestCase):
 
     # TODO: fix name
     def test_check_win_bug(self):
-        self.assertEqual(self.utils.check_determined(np.array([
+        self.assertEqual(self.utils.check_win(np.array([
             [0, 0, 2],
             [0, 0, 2],
             [0, 0, 1]

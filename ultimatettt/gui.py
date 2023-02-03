@@ -1,4 +1,5 @@
 import PySimpleGUI as sg
+import numpy as np
 
 from game import State
 from exceptions import GameException
@@ -11,7 +12,7 @@ O_COLOR = 'blue'
 BACKGROUND_COLOR = 'white'
 X_WON_BACKGROUND_COLOR = 'lightpink'
 O_WON_BACKGROUND_COLOR = 'skyblue'
-DRAW_BACKGROUND_COLOR = 'yellow'
+DRAW_BACKGROUND_COLOR = 'darkgrey'  # yellow
 WIDTH = 3
 FONT_SIZE = 22
 NEXT_AREA_COLOR = 'lightgreen'
@@ -85,22 +86,22 @@ class GraphicInterface():
         for x in range(3):
             for y in range(3):
                 state_of_area = self.state.area[x, y]
-                if state_of_area == -1:
+                if state_of_area == 0:
                     self.update_area_color((x, y), None, BACKGROUND_COLOR)
-                elif state_of_area == 0:
+                elif np.isnan(state_of_area):
                     self.update_area_color((x, y), None, DRAW_BACKGROUND_COLOR)
                 else:
                     bkg_color_won = X_WON_BACKGROUND_COLOR if state_of_area == 1 else O_WON_BACKGROUND_COLOR
                     self.update_area_color((x, y), None, bkg_color_won)
 
         # change next area color
-        if self.state.next_area is not None:
-            self.update_area_color(self.state.next_area, None, NEXT_AREA_COLOR)
+        if self.state.curr_area is not None:
+            self.update_area_color(self.state.curr_area, None, NEXT_AREA_COLOR)
         else:
             for x in range(3):
                 for y in range(3):
                     state_of_area = self.state.area[x, y]
-                    if state_of_area == -1:
+                    if state_of_area == 0:
                         self.update_area_color((x, y), None, NEXT_AREA_COLOR)
 
     def play(self, xyij):
@@ -111,12 +112,12 @@ class GraphicInterface():
 
             # update played cell
             self.update_button_text(
-                xyij, X_CHAR if self.state.next_player==2 else O_CHAR)
+                xyij, X_CHAR if self.state.curr_player==-1 else O_CHAR)
             self.update_button_color(
-                xyij, X_COLOR if self.state.next_player==2 else O_COLOR, None)
+                xyij, X_COLOR if self.state.curr_player==-1 else O_COLOR, None)
             self.update_all_areas_colors()
             # update texts
-            self.window['textPlayerTurn'].update(X_TURN_STR if self.state.next_player==1 else O_TURN_STR)
+            self.window['textPlayerTurn'].update(X_TURN_STR if self.state.curr_player==1 else O_TURN_STR)
             self.window['textException'].update('')
             
         except GameException as e:

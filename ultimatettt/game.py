@@ -1,5 +1,3 @@
-import pprint
-
 import numpy as np
 
 from exceptions import \
@@ -10,15 +8,20 @@ class Utils():
         pass
 
     def check_win_array(self, array):
-        # array == [1, 1, 1] or [2, 2, 2] -> 1 or 2 respectively, else -1
+        # array == [1, 1, 1] or [2, 2, 2] -> 1 or -1 respectively, else 0
         first_entry = array[0]
-        if np.all(array == first_entry) and first_entry > 0:
+        if np.all(array == first_entry) and first_entry != 0:
             return first_entry
-        return -1
+        return 0
 
     def check_win_arrays(self, arrays):
         # if any of the arrays is won, return the winner
-        return np.max(np.apply_along_axis(self.check_win_array, 1, arrays))
+        checked_array = np.apply_along_axis(self.check_win_array, 1, arrays)
+        diff_from_0 = checked_array != 0
+        if np.any(diff_from_0):
+            return float(checked_array[diff_from_0][0])
+        return 0
+
     
     def check_win_row_col(self, array):
         # check win for rows and cols of a 2d array
@@ -33,17 +36,22 @@ class Utils():
         )
 
     def check_filled(self, array):
-        # check if an array is filled (all entries != -1), return 0 if so
-        return 0 if np.all(array != -1) else -1
+        # check if an array is filled (all entries != 0)
+        return True if np.all(array != 0) else False
 
-    def check_determined(self, array):
+    def check_win(self, array):
         # check win of a 2d array
-        return max(
-            self.check_filled(array),
-            self.check_win_row_col(array),
-            self.check_win_diagonal(array)
-        )
+        win_row_col = self.check_win_row_col(array)
+        win_diagonal = self.check_win_diagonal(array)
 
+        if win_row_col != 0:
+            return win_row_col
+        if win_diagonal != 0:
+            return win_diagonal
+        if self.check_filled(array):
+            return np.nan
+        return 0
+           
     def xyij_to_mn(self, xyij):
         # return a printable 2 dimensional index of a 4 dimensional index
         # denotes by (x, y, i, j) -> (m, n)
@@ -57,8 +65,7 @@ class Utils():
         return m // 3, n // 3, m % 3, n % 3
 
     def player_int_to_str(self, player_int, not_played_str, player_1_str, player_2_str):
-        # -1 -> ' ', 1 -> 'X', 2 -> 'O'
-        return not_played_str if player_int == -1 \
+        return not_played_str if player_int == 0 \
             else player_1_str if player_int == 1 \
             else player_2_str
 
@@ -93,18 +100,18 @@ class Utils():
 class State():
     def __init__(self):
         # board entries:
-        # -1: playable/win-TBD
-        # 0: draw
+        # 0: playable/win-TBD
+        # np.nan: draw  (should not exist in cell)
         # 1: X (player 1) played/won
-        # 2: O (player 2) played/won
+        # -1: O (player 2) played/won
 
         # self.cell = np.zeros((3, 3, 3, 3), dtype=int)
-        self.cell = np.full((3, 3, 3, 3), -1, dtype=int)
-        self.area = np.full((3, 3), -1, dtype=int)
-        self.board = -1
+        self.cell_state = np.full((3, 3, 3, 3), 0, dtype=float)
+        self.area = np.full((3, 3), 0, dtype=float)
+        self.board = 0
 
-        self.next_area = None
-        self.next_player = 1
+        self.curr_area = None
+        self.curr_player = 1
 
     def __str__(self):
         not_played_str = '-'
@@ -113,63 +120,66 @@ class State():
 
         seperator = '\n' + '=' * 35 + '\n'
         info_1 = f'board={self.board}\narea:\n{self.area}\n\ncell:\n'
-        info_2 = f'\n\nnext_player={self.next_player}\nnext_area={self.next_area}'
+        info_2 = f'\n\ncurr_player={self.curr_player}\ncurr_area={self.curr_area}'
         return seperator + info_1 + \
-            Utils().cell_array_to_str(self.cell, not_played_str, player_1_str, player_2_str) + \
+            Utils().cell_array_to_str(self.cell_state, not_played_str, player_1_str, player_2_str) + \
             info_2 + seperator
 
     def change_win_state(self, x, y, i, j):
-        area_state = Utils().check_determined(self.cell[x, y])
-        if area_state >= 0:
-            self.area[x, y] = area_state
-            self.board = Utils().check_determined(self.area)
+        area_state = Utils().check_win(self.cell_state[x, y])
+        if area_state == 0:
+            return
+        self.area[x, y] = area_state
+        self.board = Utils().check_win(self.area)
 
     def play(self, xyij):
         x, y, i, j = xyij
 
-        if self.board >= 0:
+        if not (self.board == 0):
             raise BoardWonException(self.board)
 
-        if self.area[x, y] >= 0:
+        if not (self.area[x, y] == 0):
             raise AreaWonException((x, y))
 
-        if self.next_area is not None and self.next_area != (x, y):
-            raise AreaWrongException(self.next_area, (x, y))
+        if self.curr_area is not None and self.curr_area != (x, y):
+            raise AreaWrongException(self.curr_area, (x, y))
 
-        if self.cell[x, y, i, j] >= 0:
+        if self.cell_state[x, y, i, j] != 0:
             raise CellPlayedException(xyij)
 
-        self.cell[x, y, i, j] = self.next_player
+        self.cell_state[x, y, i, j] = self.curr_player
         self.change_win_state(x, y, i, j)
-        self.next_player = 3 - self.next_player  # 2->1, 1->2
-        if self.area[i, j] == -1:
-            self.next_area = (i, j)
+        self.curr_player = -self.curr_player
+        if self.area[i, j] == 0:
+            self.curr_area = (i, j)
         else:
-            self.next_area = None
+            self.curr_area = None
             
 
 def main():
     # TODO: transfer to test
     state = State()
-    state.play((1,1,1,1))
+    state.play((1,2,1,1))
+    # print(state.cell_state)
     state.play((1,1,0,1))
     state.play((0,1,2,2))
     state.play((2,2,1,1))
     state.play((1,1,1,2))
-    state.play((1,2,1,1))
-    state.play((1,1,1,0))
+    state.play((1,2,1,0))
     state.play((1,0,1,1))
-    state.play((0,1,1,2))
-    state.play((1,2,0,1))
-    state.play((0,1,0,2))
-    state.play((0,2,2,1))
-    state.play((2,1,1,2))
-    state.play((1,2,2,1))
+    state.play((1,1,1,1))
+    state.play((1,1,2,2))
+    state.play((2,2,1,2))
+    state.play((1,2,2,2))
+    state.play((2,2,1,0))
+    state.play((1,0,2,2))
+    state.play((1,1,2,1))
     state.play((2,1,1,1))
-    state.play((2,2,2,2))
-    state.play((2,2,2,1))
-    state.play((2,1,2,1))
-    state.play((2,1,1,0))
+    state.play((0,0,1,1))
+    state.play((0,2,2,2))
+    state.play((0,0,2,2))
+    state.play((0,1,0,0))
+    state.play((0,0,0,0))
     print(state, end='')
 
 if __name__ == '__main__':
