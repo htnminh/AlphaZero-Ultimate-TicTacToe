@@ -57,13 +57,24 @@ class ImplementationUtils():
 
         return res
 
+
+
 class ImplementedGame(Game):
+    """a board must always go with curr_area"""
     def __init__(self):
         pass
 
     def getInitBoard(self):
+        """
+        Returns:
+            startBoard: a representation of the board (ideally this is the form
+                        that will be the input to your neural network)
+            curr_area
+        """
         original_game = OriginalGame()
-        return ImplementationUtils().cell_state_4d_to_2d(original_game.cell_state)
+
+        startBoard = ImplementationUtils().cell_state_4d_to_2d(original_game.cell_state)
+        return startBoard, original_game.curr_area
 
     def getBoardSize(self):
         return (9, 9)
@@ -71,7 +82,87 @@ class ImplementedGame(Game):
     def getActionSize(self):
         return 81  # from 0 to 80
     
-    def getNextState(self, board, player, action):
-        return super().getNextState(board, player, action)
+    def getNextState(self, board, player, action, curr_area):
+        """
+        Input:
+            board: current board
+            player: current player (1 or -1)
+            action: action taken by current player
 
+        Returns:
+            nextBoard: board after applying action
+            nextPlayer: player who plays in the next turn (should be -player)
+            curr_area
+        """
+        cell_state = ImplementationUtils().cell_state_2d_to_4d(board)
+        xyij = LogicUtils().k_to_xyij(action)
+        original_game = OriginalGame()._get_next_self(cell_state, player, xyij, curr_area)
 
+        nextBoard = ImplementationUtils().cell_state_4d_to_2d(original_game.cell_state)
+        return nextBoard, original_game.curr_player, original_game.curr_area
+    
+    def getValidMoves(self, board, player, curr_area):
+        """
+        Input:
+            board: current board
+            player: current player
+            curr_area
+
+        Returns:
+            validMoves: a binary vector of length self.getActionSize(), 1 for
+                        moves that are valid from the current board and player,
+                        0 for invalid moves
+        """
+        cell_state = ImplementationUtils().cell_state_2d_to_4d(board)
+        binary_4d_array = OriginalGame()._get_valid_moves(cell_state, player, curr_area)
+
+        validMoves = ImplementationUtils().cell_state_4d_to_2d(binary_4d_array)
+        return validMoves
+    
+    def getGameEnded(self, board, player, curr_area):
+        """
+        Input:
+            board: current board
+            player: current player (1 or -1)
+            curr_area
+
+        Returns:
+            r: 0 if game has not ended. 1 if player won, -1 if player lost,
+               small non-zero value for draw.
+        """
+        cell_state = ImplementationUtils().cell_state_2d_to_4d(board)
+
+        r = OriginalGame()._get_game_ended(cell_state, player, curr_area)
+        return r
+    
+    def getCanonicalForm(self, board, player, curr_area):
+        """
+        Input:
+            board: current board
+            player: current player (1 or -1)
+            curr_area
+
+        Returns:
+            canonicalBoard: returns canonical form of board. The canonical form
+                            should be independent of player. For e.g. in chess,
+                            the canonical form can be chosen to be from the pov
+                            of white. When the player is white, we can return
+                            board as is. When the player is black, we can invert
+                            the colors and return the board.
+            curr_area
+        """
+        return board * player, curr_area
+    
+    def getSymmetries(self, board, pi, curr_area):
+        """
+        Input:
+            board: current board
+            pi: policy vector of size self.getActionSize()
+            curr_area
+
+        Returns:
+            symmForms: a list of [(board,pi)] where each tuple is a symmetrical
+                       form of the board and the corresponding pi vector. This
+                       is used when training the neural network from examples.
+        """
+        pass

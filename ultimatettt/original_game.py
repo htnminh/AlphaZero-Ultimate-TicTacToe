@@ -2,8 +2,10 @@ from typing import List
 
 import numpy as np
 
-from exceptions import \
-    BoardWonException, AreaWonException, AreaWrongException, CellPlayedException
+from exceptions import (
+    GameException,
+    BoardWonException, AreaWonException,
+    AreaWrongException, CellPlayedException)
 
 class LogicUtils():
     def __init__(self):
@@ -102,6 +104,7 @@ class LogicUtils():
             return np.nan
         return 0
            
+
     def xyij_to_mn(self, xyij):
         """return 2 dimensional index of a 4 dimensional index
         denotes by (x, y, i, j) -> (m, n)"""
@@ -124,6 +127,7 @@ class LogicUtils():
         area_number = 3*x + y
         index_in_area = 3*i + j
         return area_number*9 + index_in_area
+
 
     def cell_int_to_str(self, player_int:int, not_played_str, player_1_str, player_2_str):
         return not_played_str if player_int == 0 \
@@ -159,6 +163,7 @@ class LogicUtils():
         
 
 class OriginalGame():
+
     def __init__(self):
         """
         cell_state entries:
@@ -179,6 +184,7 @@ class OriginalGame():
         self.curr_area = None
         self.curr_player = 1
 
+
     def __str__(self):
         not_played_str = '-'
         player_1_str = 'X'
@@ -191,16 +197,26 @@ class OriginalGame():
             LogicUtils().cell_array_to_str(self.cell_state, not_played_str, player_1_str, player_2_str) + \
             info_2 + seperator
 
-    def change_win_state(self, xy):
+
+    def update_area(self, xy):
         """
-        If area (x, y) is won, change self.area correspondingly + change self.board
+        Change self.area + change self.board
         """
         x, y = xy
-        area_state = LogicUtils().check_win(self.cell_state[x, y])
-        if area_state == 0:
-            return
-        self.area[x, y] = area_state
+        self.area[x, y] = LogicUtils().check_win(self.cell_state[x, y])
+
+    def update_board(self):
         self.board = LogicUtils().check_win(self.area)
+    
+    def update_area_and_board(self, xy):
+        self.update_area(xy)
+        self.update_board()
+
+    def update_all_areas_and_board(self):
+        for x in range(3):
+            for y in range(3):
+                self.update_area((x, y))
+        self.update_board()
 
     def check_playable_cell(self, xyij):
         """raise a corresponding exception if not playable"""
@@ -225,13 +241,60 @@ class OriginalGame():
         self.check_playable_cell(xyij)
 
         self.cell_state[x, y, i, j] = self.curr_player
-        self.change_win_state((x, y))
+        self.update_area_and_board((x, y))
         self.curr_player = -self.curr_player
         if self.area[i, j] == 0:
             self.curr_area = (i, j)
         else:
             self.curr_area = None
-            
+    
+
+    def _reinit(self, cell_state, player, curr_area):
+        self.cell_state = cell_state
+        self.update_all_areas_and_board()
+        self.curr_player = player
+        self.curr_area = curr_area
+        return self
+
+    def _get_next_self(self, cell_state, player, xyij, curr_area):
+        self._reinit(self, cell_state, player, curr_area)
+        self.execute_move(xyij)
+        return self
+
+    def _get_valid_moves(self, cell_state, player, curr_area):
+        """return a 4d array, 
+        TODO: may need an improvement"""
+        self._reinit(self, cell_state, player, curr_area)
+        binary_4d_array = np.zeros((3, 3, 3, 3))
+        for x in range(3):
+            for y in range(3):
+                for i in range(3):
+                    for j in range(3):
+                        try:
+                            self.check_playable_cell((x, y, i, j))
+                            binary_4d_array[x, y, i, j] = 1
+                        except GameException:
+                            pass
+        return binary_4d_array
+
+    def _get_game_ended(self, cell_state, player, curr_area):
+        SMALL_VALUE = 1e-3
+        """
+        Board:
+        0: not determined
+        nan: draw
+        1: X (player 1) won
+        -1: O (player 2) won
+
+        Returns:
+            r: 0 if game has not ended. 1 if player won, -1 if player lost,
+               small non-zero value for draw.
+        """
+        self._reinit(self, cell_state, player, curr_area)
+        if np.isnan(self.board):
+            return SMALL_VALUE
+        return self.board
+        
 
 def main():
     # TODO: transfer to test
