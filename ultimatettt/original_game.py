@@ -103,16 +103,27 @@ class LogicUtils():
         return 0
            
     def xyij_to_mn(self, xyij):
-        """return a printable 2 dimensional index of a 4 dimensional index
+        """return 2 dimensional index of a 4 dimensional index
         denotes by (x, y, i, j) -> (m, n)"""
         x, y, i, j = xyij
-        return 3*x+i, 3*y+j
+        return 3*x + i, 3*y + j
 
     def mn_to_xyij(self, mn):
-        """return a 4 dimensional index of a printable 2 dimensional index
+        """return a 4 dimensional index of 2 dimensional index
         denotes by (m, n) -> (x, y, i, j)"""
         m, n = mn
         return m // 3, n // 3, m % 3, n % 3
+
+    def k_to_xyij(self, k):
+        area_number = k // 9
+        index_in_area = k % 9
+        return area_number // 3, area_number % 3, index_in_area // 3, index_in_area % 3
+
+    def xyij_to_k(self, xyij):
+        x, y, i, j = xyij
+        area_number = 3*x + y
+        index_in_area = 3*i + j
+        return area_number*9 + index_in_area
 
     def cell_int_to_str(self, player_int:int, not_played_str, player_1_str, player_2_str):
         return not_played_str if player_int == 0 \
