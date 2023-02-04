@@ -108,7 +108,7 @@ class GraphicInterface():
         x, y, i, j = xyij 
 
         try:
-            self.state.play((x, y, i, j))
+            self.state.execute_move((x, y, i, j))
 
             # update played cell
             self.update_button_text(

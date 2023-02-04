@@ -180,14 +180,18 @@ class State():
             Utils().cell_array_to_str(self.cell_state, not_played_str, player_1_str, player_2_str) + \
             info_2 + seperator
 
-    def change_win_state(self, x, y):
+    def change_win_state(self, xy):
+        """
+        If area (x, y) is won, change self.area correspondingly + change self.board
+        """
+        x, y = xy
         area_state = Utils().check_win(self.cell_state[x, y])
         if area_state == 0:
             return
         self.area[x, y] = area_state
         self.board = Utils().check_win(self.area)
 
-    def play(self, xyij):
+    def execute_move(self, xyij):
         x, y, i, j = xyij
 
         if not (self.board == 0):
@@ -203,7 +207,7 @@ class State():
             raise CellPlayedException(xyij)
 
         self.cell_state[x, y, i, j] = self.curr_player
-        self.change_win_state(x, y)
+        self.change_win_state((x, y))
         self.curr_player = -self.curr_player
         if self.area[i, j] == 0:
             self.curr_area = (i, j)
@@ -214,27 +218,27 @@ class State():
 def main():
     # TODO: transfer to test
     state = State()
-    state.play((1,2,1,1))
+    state.execute_move((1,2,1,1))
     # print(state.cell_state)
-    state.play((1,1,0,1))
-    state.play((0,1,2,2))
-    state.play((2,2,1,1))
-    state.play((1,1,1,2))
-    state.play((1,2,1,0))
-    state.play((1,0,1,1))
-    state.play((1,1,1,1))
-    state.play((1,1,2,2))
-    state.play((2,2,1,2))
-    state.play((1,2,2,2))
-    state.play((2,2,1,0))
-    state.play((1,0,2,2))
-    state.play((1,1,2,1))
-    state.play((2,1,1,1))
-    state.play((0,0,1,1))
-    state.play((0,2,2,2))
-    state.play((0,0,2,2))
-    state.play((0,1,0,0))
-    state.play((0,0,0,0))
+    state.execute_move((1,1,0,1))
+    state.execute_move((0,1,2,2))
+    state.execute_move((2,2,1,1))
+    state.execute_move((1,1,1,2))
+    state.execute_move((1,2,1,0))
+    state.execute_move((1,0,1,1))
+    state.execute_move((1,1,1,1))
+    state.execute_move((1,1,2,2))
+    state.execute_move((2,2,1,2))
+    state.execute_move((1,2,2,2))
+    state.execute_move((2,2,1,0))
+    state.execute_move((1,0,2,2))
+    state.execute_move((1,1,2,1))
+    state.execute_move((2,1,1,1))
+    state.execute_move((0,0,1,1))
+    state.execute_move((0,2,2,2))
+    state.execute_move((0,0,2,2))
+    state.execute_move((0,1,0,0))
+    state.execute_move((0,0,0,0))
     print(state, end='')
 
 if __name__ == '__main__':
