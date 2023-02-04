@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import numpy as np
 
-from game import State
+from original_game import OriginalGame
 from exceptions import GameException
 
 
@@ -26,7 +26,7 @@ class GraphicInterface():
         # if set full_gui to False, shows a simpler GUI for report
         self.full_gui = full_gui
 
-        self.state = State()
+        self.state = OriginalGame()
         self.layout = self.create_layout()
         self.window = self.create_window('Ultimate Tic-Tac-Toe')
         self.event_loop()
@@ -136,8 +136,6 @@ class GraphicInterface():
             elif event.startswith('cell'):
                 xyij = tuple(map(int, event[-4:]))
                 self.play(xyij)
-                
-                # print(self.state)
 
 
 if __name__ == '__main__':
