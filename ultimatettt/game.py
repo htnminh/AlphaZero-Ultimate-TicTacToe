@@ -180,7 +180,7 @@ class State():
             Utils().cell_array_to_str(self.cell_state, not_played_str, player_1_str, player_2_str) + \
             info_2 + seperator
 
-    def change_win_state(self, x, y, i, j):
+    def change_win_state(self, x, y):
         area_state = Utils().check_win(self.cell_state[x, y])
         if area_state == 0:
             return
@@ -203,7 +203,7 @@ class State():
             raise CellPlayedException(xyij)
 
         self.cell_state[x, y, i, j] = self.curr_player
-        self.change_win_state(x, y, i, j)
+        self.change_win_state(x, y)
         self.curr_player = -self.curr_player
         if self.area[i, j] == 0:
             self.curr_area = (i, j)
