@@ -198,13 +198,13 @@ class State():
             raise BoardWonException(self.board)
 
         if not (self.area[x, y] == 0):
-            raise AreaWonException((x, y))
+            raise AreaWonException((x, y), self.area[x, y])
 
         if self.curr_area is not None and self.curr_area != (x, y):
             raise AreaWrongException(self.curr_area, (x, y))
 
         if self.cell_state[x, y, i, j] != 0:
-            raise CellPlayedException(xyij)
+            raise CellPlayedException(xyij, self.cell_state[x, y, i, j])
 
         self.cell_state[x, y, i, j] = self.curr_player
         self.change_win_state((x, y))

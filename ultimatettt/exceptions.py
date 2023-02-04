@@ -3,14 +3,14 @@ class GameException(Exception):
 
 
 class BoardWonException(GameException):
-    def __init__(self, board):
-        message = f'Player {board} already won, please start a new game'    
+    def __init__(self, board_winner):
+        message = f'Player {board_winner} already won, please start a new game'    
         super().__init__(message)
 
 
 class AreaWonException(GameException):
-    def __init__(self, played_area):
-        message = f'Area {played_area} already won'
+    def __init__(self, played_area, area_winner):
+        message = f'Area {played_area} already won by {area_winner}'
         super().__init__(message)
 
 
@@ -21,7 +21,7 @@ class AreaWrongException(GameException):
         
 
 class CellPlayedException(GameException):
-    def __init__(self, xyij):      
-        message = f'Cell {xyij} is already played'      
+    def __init__(self, xyij, player):      
+        message = f'Cell {xyij} is already played by {player}'      
         super().__init__(message)
 
