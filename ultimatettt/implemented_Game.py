@@ -241,4 +241,15 @@ class ImplementedGame(Game):
         
         return symmForms
 
-                        
+
+# TEST
+if __name__ == '__main__':
+    igame = ImplementedGame()
+    symmforms = igame.getSymmetries(np.arange(81).reshape(9,9), np.arange(81), None)
+    print(symmforms[-1])
+
+    print()
+
+    igame = ImplementedGame()
+    symmforms = igame.getSymmetries(np.arange(81).reshape(9,9), np.arange(81), (1, 2))
+    print(symmforms[-1])
