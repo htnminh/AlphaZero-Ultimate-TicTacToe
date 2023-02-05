@@ -57,7 +57,8 @@ class NNetWrapper(NeuralNet):
 
                 # predict
                 if args.cuda:
-                    boards, target_pis, target_vs, curr_areas = \
+                    # boards, target_pis, target_vs, curr_areas = \
+                    boards, target_pis, target_vs = \
                         boards.contiguous().cuda(), target_pis.contiguous().cuda(), target_vs.contiguous().cuda()#, target_curr_areas.contiguous().cuda()
 
 
