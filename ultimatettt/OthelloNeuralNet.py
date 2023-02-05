@@ -25,20 +25,20 @@ class OthelloNNet(nn.Module):
         self.bn3 = nn.BatchNorm2d(args.num_channels)
         self.bn4 = nn.BatchNorm2d(args.num_channels)
 
-        # self.fc1 = nn.Linear(args.num_channels*(self.board_x-4)*(self.board_y-4), 1024)
-        self.fc1 = nn.Linear(args.num_channels*(self.board_x-4)*(self.board_y-4), 256)
-        # self.fc_bn1 = nn.BatchNorm1d(1024)
-        self.fc_bn1 = nn.BatchNorm1d(256)
+        self.fc1 = nn.Linear(args.num_channels*(self.board_x-4)*(self.board_y-4), 1024)
+        # self.fc1 = nn.Linear(args.num_channels*(self.board_x-4)*(self.board_y-4), 256)
+        self.fc_bn1 = nn.BatchNorm1d(1024)
+        # self.fc_bn1 = nn.BatchNorm1d(256)
 
-        # self.fc2 = nn.Linear(1024, 512)
-        self.fc2 = nn.Linear(256, 128)
-        # self.fc_bn2 = nn.BatchNorm1d(512)
-        self.fc_bn2 = nn.BatchNorm1d(128)
+        self.fc2 = nn.Linear(1024, 512)
+        # self.fc2 = nn.Linear(256, 128)
+        self.fc_bn2 = nn.BatchNorm1d(512)
+        # self.fc_bn2 = nn.BatchNorm1d(128)
 
-        # self.fc3 = nn.Linear(512, self.action_size)
-        self.fc3 = nn.Linear(128, self.action_size)
-        # self.fc4 = nn.Linear(512, 1)
-        self.fc4 = nn.Linear(128, 1)
+        self.fc3 = nn.Linear(512, self.action_size)
+        # self.fc3 = nn.Linear(128, self.action_size)
+        self.fc4 = nn.Linear(512, 1)
+        # self.fc4 = nn.Linear(128, 1)
 
 
 
