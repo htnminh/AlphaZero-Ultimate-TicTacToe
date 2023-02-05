@@ -57,7 +57,28 @@ class ImplementationUtils():
 
         return res
 
+    def cell_state_4d_to_1d(self, cell_state):
+        res = np.zeros(81, dtype=float)
+        logic_utils = LogicUtils()
 
+        for x in range(3):
+            for y in range(3):
+                for i in range(3):
+                    for j in range(3):
+                        k = logic_utils.xyij_to_k((x, y, i, j))
+                        res[k] = cell_state[x, y, i, j]
+
+        return res
+
+    def cell_state_1d_to_4d(self, cell_state_1d):
+        res = np.zeros((3,3,3,3), dtype=float)
+        logic_utils = LogicUtils()
+
+        for k in range(81):
+            x, y, i, j = logic_utils.k_to_xyij(k)
+            res[x, y, i, j] = cell_state_1d[k]
+        
+        return res
 
 class ImplementedGame(Game):
     """a board must always go with curr_area"""
@@ -161,8 +182,63 @@ class ImplementedGame(Game):
             curr_area
 
         Returns:
-            symmForms: a list of [(board,pi)] where each tuple is a symmetrical
+            symmForms: a list of [(board,pi, curr_area)] where each tuple is a symmetrical
                        form of the board and the corresponding pi vector. This
                        is used when training the neural network from examples.
+
+        TODO: improvements
         """
-        pass
+        cell_state_original = ImplementationUtils().cell_state_2d_to_4d(board)
+        pi_4d_original = ImplementationUtils().cell_state_1d_to_4d(pi)
+        if curr_area is not None:
+            curr_area_tracker_original = np.zeros((3,3))
+            curr_area_tracker_original[curr_area] = 1
+        
+        symmForms = list()
+
+        for flip_big in [False, True]:
+            for flip_small in [False, True]:
+                for k_big in range(4):
+                    for k_small in range(4):
+
+                        # init
+                        cell_state = cell_state_original.copy()
+                        pi_4d = pi_4d_original.copy()
+                        if curr_area is not None:
+                            curr_area_tracker = curr_area_tracker_original.copy()
+
+                        # flip big
+                        if flip_big:
+                            cell_state = np.flip(cell_state, axis=0)
+                            pi_4d = np.flip(pi_4d, axis=0)
+                            if curr_area is not None:
+                                curr_area_tracker = np.flip(curr_area_tracker, axis=0)
+                        
+                        # flip small
+                        if flip_small:
+                            cell_state = np.flip(cell_state, axis=2)
+                            pi_4d = np.flip(pi_4d, axis=2)
+                        
+                        # rotate
+                        cell_state = np.rot90(cell_state, k=k_big, axes=(0, 1))
+                        cell_state = np.rot90(cell_state, k=k_small, axes=(2, 3))
+
+                        pi_4d = np.rot90(pi_4d, k=k_big, axes=(0, 1))
+                        pi_4d = np.rot90(pi_4d, k=k_small, axes=(2, 3))
+
+                        if curr_area is not None:
+                            curr_area_tracker = np.rot90(curr_area_tracker, k=k_big, axes=(0, 1))
+                            
+                        # add result
+                        symmForms.append(
+                            (
+                                ImplementationUtils().cell_state_4d_to_2d(cell_state),  # board
+                                ImplementationUtils().cell_state_4d_to_1d(pi_4d),  # pi
+                                None if curr_area is None \
+                                    else tuple(np.argwhere(curr_area_tracker == 1).reshape(2))  # curr_area
+                            )
+                        )
+        
+        return symmForms
+
+                        

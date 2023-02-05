@@ -18,17 +18,6 @@ print(np.all(ImplementationUtils().cell_state_2d_to_4d(a_2d) == a))
 print('-' * 50)
 
 # Test 4d <-> 1d
-a_1d = np.zeros(81)
-for k in range(81):
-    x, y, i, j = LogicUtils().k_to_xyij(k)
-    a_1d[k] = a[x, y, i, j]
+a_1d = ImplementationUtils().cell_state_4d_to_1d(a)
 print(a_1d)
-
-a_generate = np.zeros((3,3,3,3))
-for x in range(3):
-    for y in range(3):
-        for i in range(3):
-            for j in range(3):
-                k = LogicUtils().xyij_to_k((x, y, i, j))
-                a_generate[x, y, i, j] = a_1d[k]
-print(np.all(a_generate == a))
+print(np.all(ImplementationUtils().cell_state_1d_to_4d(a_1d) == a))
