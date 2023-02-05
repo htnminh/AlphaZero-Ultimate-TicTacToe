@@ -257,14 +257,14 @@ class OriginalGame():
         return self
 
     def _get_next_self(self, cell_state, player, xyij, curr_area):
-        self._reinit(self, cell_state, player, curr_area)
+        self._reinit(cell_state, player, curr_area)
         self.execute_move(xyij)
         return self
 
     def _get_valid_moves(self, cell_state, player, curr_area):
         """return a 4d array, 
         TODO: may need an improvement"""
-        self._reinit(self, cell_state, player, curr_area)
+        self._reinit(cell_state, player, curr_area)
         binary_4d_array = np.zeros((3, 3, 3, 3))
         for x in range(3):
             for y in range(3):
@@ -278,7 +278,7 @@ class OriginalGame():
         return binary_4d_array
 
     def _get_game_ended(self, cell_state, player, curr_area):
-        SMALL_VALUE = 1e-3
+        SMALL_VALUE = 1e-1
         """
         Board:
         0: not determined
@@ -290,7 +290,7 @@ class OriginalGame():
             r: 0 if game has not ended. 1 if player won, -1 if player lost,
                small non-zero value for draw.
         """
-        self._reinit(self, cell_state, player, curr_area)
+        self._reinit(cell_state, player, curr_area)
         if np.isnan(self.board):
             return SMALL_VALUE
         return self.board

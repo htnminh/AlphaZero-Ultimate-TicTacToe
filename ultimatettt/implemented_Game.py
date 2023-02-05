@@ -137,7 +137,7 @@ class ImplementedGame(Game):
         cell_state = ImplementationUtils().cell_state_2d_to_4d(board)
         binary_4d_array = OriginalGame()._get_valid_moves(cell_state, player, curr_area)
 
-        validMoves = ImplementationUtils().cell_state_4d_to_2d(binary_4d_array)
+        validMoves = ImplementationUtils().cell_state_4d_to_1d(binary_4d_array)
         return validMoves
     
     def getGameEnded(self, board, player, curr_area):
@@ -241,7 +241,7 @@ class ImplementedGame(Game):
         
         return symmForms
 
-    def stringRepresentation(self, board, curr_area):
+    def stringRepresentation(self, board:np.ndarray, curr_area):
         """
         Input:
             board: current board
@@ -250,9 +250,12 @@ class ImplementedGame(Game):
             boardString: a quick conversion of board to a string format.
                          Required by MCTS for hashing.
         """
-        cell_state = ImplementationUtils().cell_state_2d_to_4d(board)
-        cell_state_1d = ImplementationUtils().cell_state_4d_to_1d(cell_state)
-        return str(cell_state_1d) + " " + str(curr_area)
+        try:
+            cell_state = ImplementationUtils().cell_state_2d_to_4d(board)
+            cell_state_1d = ImplementationUtils().cell_state_4d_to_1d(cell_state)
+            return str(cell_state_1d) + " " + str(curr_area)
+        except:
+            print(board)
 
 # TEST
 if __name__ == '__main__':
