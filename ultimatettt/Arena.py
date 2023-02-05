@@ -89,6 +89,7 @@ class Arena():
 
         # for _ in tqdm(range(num), desc="Arena.playGames (1)"):
         print("Arena.playGames (1).....")
+        print(f'num={num}')
         for _ in range(num):
             gameResult = self.playGame(verbose=verbose)
             if gameResult == 1:
@@ -102,6 +103,7 @@ class Arena():
 
         # for _ in tqdm(range(num), desc="Arena.playGames (2)"):
         print("Arena.playGames (2).....")
+        print(f'num={num}')
         for _ in range(num):
             gameResult = self.playGame(verbose=verbose)
             if gameResult == -1:

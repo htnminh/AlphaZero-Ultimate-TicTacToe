@@ -47,7 +47,7 @@ class NNetWrapper(NeuralNet):
             # t = tqdm(range(batch_count), desc='Training Net')
             # for _ in t:
             print('Training Net.....')
-            # for _ in range(batch_count):
+            print(f'batch_no: batch_count={batch_count}')
             for batch_no in range(batch_count):
                 sample_ids = np.random.randint(len(examples), size=args.batch_size)
                 boards, pis, vs, curr_areas = list(zip(*[examples[i] for i in sample_ids]))

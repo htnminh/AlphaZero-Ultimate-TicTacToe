@@ -87,6 +87,7 @@ class Coach():
 
                 # for _ in tqdm(range(self.args.numEps), desc="Self Play"):
                 print("Self Play.....")
+                print(f'self.args.numEps={self.args.numEps}')
                 for _ in range(self.args.numEps):
                     self.mcts = MCTS(self.game, self.nnet, self.args)  # reset search tree
                     iterationTrainExamples += self.executeEpisode()
