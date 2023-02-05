@@ -241,15 +241,30 @@ class ImplementedGame(Game):
         
         return symmForms
 
+    def stringRepresentation(self, board, curr_area):
+        """
+        Input:
+            board: current board
+
+        Returns:
+            boardString: a quick conversion of board to a string format.
+                         Required by MCTS for hashing.
+        """
+        cell_state = ImplementationUtils().cell_state_2d_to_4d(board)
+        cell_state_1d = ImplementationUtils().cell_state_4d_to_1d(cell_state)
+        return str(cell_state_1d) + " " + str(curr_area)
 
 # TEST
 if __name__ == '__main__':
     igame = ImplementedGame()
     symmforms = igame.getSymmetries(np.arange(81).reshape(9,9), np.arange(81), None)
-    print(symmforms[-1])
+    # print(symmforms[-1])
 
-    print()
+    # print()
 
     igame = ImplementedGame()
     symmforms = igame.getSymmetries(np.arange(81).reshape(9,9), np.arange(81), (1, 2))
-    print(symmforms[-1])
+    # print(symmforms[-1])
+
+    igame = ImplementedGame()
+    # print(igame.stringRepresentation(np.arange(81).reshape(9,9), (1,2)))
