@@ -7,6 +7,8 @@ from implemented_Game import ImplementedGame as Game
 from implemented_NeuralNet import NNetWrapper as nn
 from utils import *
 
+from pprint import pprint
+from implemented_NeuralNet import args as nn_args
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +39,10 @@ args = dotdict({
 
 
 def main():
+    # My notes:
+    pprint(args)
+    pprint(nn_args)
+
     log.info('Loading %s...', Game.__name__)
     # g = Game(6)
     g = Game()
