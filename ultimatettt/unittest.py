@@ -2,13 +2,13 @@ import unittest
 
 import numpy as np
 
-from game import Utils
+from original_game import LogicUtils
 
 class TestUtils(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName)
 
-        self.utils = Utils()
+        self.utils = LogicUtils()
     
     def test_check_win_array_1_won(self):
         self.assertEqual(self.utils.check_win_array(np.array([1, 1, 1])), 1)
