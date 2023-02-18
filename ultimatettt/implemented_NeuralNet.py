@@ -19,7 +19,8 @@ args = dotdict({
     'epochs': 15,
     'batch_size': 64,
     'cuda': torch.cuda.is_available(),
-    'num_channels': 512,
+    # 'num_channels': 512,
+    'num_channels': 64,
     })
 
 class NNetWrapper(NeuralNet):
