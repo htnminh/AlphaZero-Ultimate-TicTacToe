@@ -20,7 +20,7 @@ class ImplementationUtils():
             ndarray -- of size (9, 9)
 
         What it look like:
-            original_game.cell_state = np.arange(81).reshape((3,3,3,3))  # testing only
+            original_game.cell_state = np.arange(81).reshape((3,3,3,3))  # for testing only
             return ImplementationUtils().cell_state_to_2d(original_game.cell_state)
 
             [[ 0.  1.  2.  9. 10. 11. 18. 19. 20.]
@@ -265,7 +265,7 @@ class ImplementedGame(Game):
         mask = ImplementationUtils().cell_state_4d_to_2d(binary_4d_array)
         return mask
     
-# TEST
+
 if __name__ == '__main__':
     igame = ImplementedGame()
     next_board, next_player, next_curr_area = igame.getNextState(np.zeros((9, 9)), 1, 21, None)
