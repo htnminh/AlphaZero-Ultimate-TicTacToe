@@ -83,7 +83,7 @@ class NNetWrapper(NeuralNet):
                 total_loss.backward()
                 optimizer.step()
 
-    def predict(self, board):
+    def predict(self, board, mask_2d):
         """
         board: np array with board
         """
@@ -92,11 +92,12 @@ class NNetWrapper(NeuralNet):
 
         # preparing input
         board = torch.FloatTensor(board.astype(np.float64))
+        mask_2d = torch.FloatTensor(mask_2d.astype(np.float64))
         if args.cuda: board = board.contiguous().cuda()
         board = board.view(1, self.board_x, self.board_y)
         self.nnet.eval()
         with torch.no_grad():
-            pi, v = self.nnet(board)
+            pi, v = self.nnet(torch.concatenate((board, mask_2d.view(1, self.board_x, self.board_y)), 0))
 
         # print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
         return torch.exp(pi).data.cpu().numpy()[0], v.data.cpu().numpy()[0]

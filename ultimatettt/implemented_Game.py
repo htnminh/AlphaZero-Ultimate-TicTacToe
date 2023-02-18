@@ -257,7 +257,7 @@ class ImplementedGame(Game):
         except:
             print(board)
 
-    def get_2d_mask(self, board:np.ndarray, player, curr_area):
+    def get_mask_2d(self, board:np.ndarray, player, curr_area):
         '''simply a 2d array of valid moves'''
         cell_state = ImplementationUtils().cell_state_2d_to_4d(board)
         binary_4d_array = OriginalGame()._get_valid_moves(cell_state, player, curr_area)
@@ -269,4 +269,4 @@ class ImplementedGame(Game):
 if __name__ == '__main__':
     igame = ImplementedGame()
     next_board, next_player, next_curr_area = igame.getNextState(np.zeros((9, 9)), 1, 21, None)
-    print(igame.get_2d_mask(next_board, next_player, next_curr_area))
+    print(igame.get_mask_2d(next_board, next_player, next_curr_area))
