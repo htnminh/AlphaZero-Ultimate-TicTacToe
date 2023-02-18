@@ -44,11 +44,11 @@ class UTTTNet(nn.Module):
         s = torch.cat((a, b), 1)
         s = s.view(-1, self.args.num_channels*2*9)
 
-        a = F.relu(F.dropout1d(self.bn_fcA1(self.fcA1(s)), p=self.args.dropout, training=self.training))
-        b = F.relu(F.dropout1d(self.bn_fcB1(self.fcB1(s)), p=self.args.dropout, training=self.training))
+        a = F.relu(F.dropout(self.bn_fcA1(self.fcA1(s)), p=self.args.dropout, training=self.training))
+        b = F.relu(F.dropout(self.bn_fcB1(self.fcB1(s)), p=self.args.dropout, training=self.training))
 
-        a = F.relu(F.dropout1d(self.bn_fcA2(self.fcA2(a)), p=self.args.dropout, training=self.training))
-        b = F.relu(F.dropout1d(self.bn_fcB2(self.fcB2(b)), p=self.args.dropout, training=self.training))
+        a = F.relu(F.dropout(self.bn_fcA2(self.fcA2(a)), p=self.args.dropout, training=self.training))
+        b = F.relu(F.dropout(self.bn_fcB2(self.fcB2(b)), p=self.args.dropout, training=self.training))
 
         pi = self.fcA3(a)                                                                        
         v = self.fcB3(b)                                                                       
