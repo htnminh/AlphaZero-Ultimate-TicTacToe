@@ -16,7 +16,8 @@ args = dotdict({
     'lr': 0.001,
     'dropout': 0.3,
     # 'epochs': 10,
-    'epochs': 15,
+    # 'epochs': 15,
+    'epochs': 2,  # TEST
     'batch_size': 64,
     'cuda': torch.cuda.is_available(),
     # 'num_channels': 512,
@@ -34,7 +35,7 @@ class NNetWrapper(NeuralNet):
 
     def train(self, examples):
         """
-        examples: list of examples, each example is of form (board, pi, v) (+ curr_area)
+        examples: list of examples, each example is of form (board, pi, v) (+ curr_area) (+ mask_2d)
         """
         optimizer = optim.Adam(self.nnet.parameters())
 
@@ -52,21 +53,23 @@ class NNetWrapper(NeuralNet):
             print(f'batch_no: batch_count={batch_count}')
             for batch_no in range(batch_count):
                 sample_ids = np.random.randint(len(examples), size=args.batch_size)
-                boards, pis, vs, curr_areas = list(zip(*[examples[i] for i in sample_ids]))
+                boards, pis, vs, curr_areas, mask_2ds = list(zip(*[examples[i] for i in sample_ids]))
                 boards = torch.FloatTensor(np.array(boards).astype(np.float64))
                 target_pis = torch.FloatTensor(np.array(pis))
                 target_vs = torch.FloatTensor(np.array(vs).astype(np.float64))
+                mask_2ds = torch.FloatTensor(np.array(mask_2ds).astype(np.float64))
                 # target_curr_areas = torch.FloatTensor(np.array(curr_areas).astype(np.float64))
 
                 # predict
                 if args.cuda:
                     # boards, target_pis, target_vs, curr_areas = \
-                    boards, target_pis, target_vs = \
-                        boards.contiguous().cuda(), target_pis.contiguous().cuda(), target_vs.contiguous().cuda()#, target_curr_areas.contiguous().cuda()
+                    boards, target_pis, target_vs, mask_2ds = \
+                        boards.contiguous().cuda(), target_pis.contiguous().cuda(), \
+                        target_vs.contiguous().cuda(), mask_2ds.contiguous().cuda()
 
 
                 # compute output
-                out_pi, out_v = self.nnet(boards)
+                out_pi, out_v = self.nnet(torch.cat((boards, mask_2ds), 1))
                 l_pi = self.loss_pi(target_pis, out_pi)
                 l_v = self.loss_v(target_vs, out_v)
                 total_loss = l_pi + l_v
