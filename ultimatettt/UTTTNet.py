@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchsummary import summary
 
 from implemented_Game import Game
 
@@ -15,57 +16,59 @@ class UTTTNet(nn.Module):
         self.args = args
 
         super(UTTTNet, self).__init__()
-        self.conv1 = nn.Conv2d(2, args.num_channels, 3, stride=1, padding=1)
-        self.conv2 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1, padding=1)
-        # self.conv3 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1)
-        # self.conv4 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1)
-        self.conv3 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1, padding=1)
-        self.conv4 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1, padding=1)
 
-        self.bn1 = nn.BatchNorm2d(args.num_channels)
-        self.bn2 = nn.BatchNorm2d(args.num_channels)
-        self.bn3 = nn.BatchNorm2d(args.num_channels)
-        self.bn4 = nn.BatchNorm2d(args.num_channels)
+        self.convA = nn.Conv2d(2, args.num_channels, 3, stride=3, padding=0, dilation=1)
+        self.bn_convA = nn.BatchNorm2d(args.num_channels)
 
-        # self.fc1 = nn.Linear(args.num_channels*(self.board_x-4)*(self.board_y-4), 1024)
-        # self.fc1 = nn.Linear(args.num_channels*(self.board_x-4)*(self.board_y-4), 256)
-        self.fc1 = nn.Linear(args.num_channels*(self.board_x)*(self.board_y), 1024)
-        self.fc_bn1 = nn.BatchNorm1d(1024)
-        # self.fc_bn1 = nn.BatchNorm1d(256)
+        self.convB = nn.Conv2d(2, args.num_channels, 3, stride=1, padding=0, dilation=3)
+        self.bn_convB = nn.BatchNorm2d(args.num_channels)
 
-        self.fc2 = nn.Linear(1024, 512)
-        # self.fc2 = nn.Linear(256, 128)
-        self.fc_bn2 = nn.BatchNorm1d(512)
-        # self.fc_bn2 = nn.BatchNorm1d(128)
+        self.fcA1 = nn.Linear(args.num_channels*2*9, 1024)
+        self.bn_fcA1 = nn.BatchNorm1d(1024)
+        self.fcA2 = nn.Linear(1024, 512)
+        self.bn_fcA2 = nn.BatchNorm1d(512)
+        self.fcA3 = nn.Linear(512, self.action_size)
+    
+        self.fcB1 = nn.Linear(args.num_channels*2*9, 1024)
+        self.bn_fcB1 = nn.BatchNorm1d(1024)
+        self.fcB2 = nn.Linear(1024, 512)
+        self.bn_fcB2 = nn.BatchNorm1d(512)
+        self.fcB3 = nn.Linear(512, 1)
 
-        self.fc3 = nn.Linear(512, self.action_size)
-        # self.fc3 = nn.Linear(128, self.action_size)
-        self.fc4 = nn.Linear(512, 1)
-        # self.fc4 = nn.Linear(128, 1)
+    def forward(self, s):  
+        # s = s.view(-1, 2, self.board_x, self.board_y)            
 
+        a = F.relu(F.dropout2d(self.bn_convA(self.convA(s)), p=self.args.dropout, training=self.training))                     
+        b = F.relu(F.dropout2d(self.bn_convB(self.convB(s)), p=self.args.dropout, training=self.training))                     
 
+        s = torch.cat((a, b), 1)
+        s = s.view(-1, args.num_channels*2*9)
 
-    def forward(self, s):
-        #                                                           s: batch_size x board_x x board_y
-        s = s.view(-1, 2, self.board_x, self.board_y)                # batch_size x 1 x board_x x board_y
-        s = F.relu(self.bn1(self.conv1(s)))                          # batch_size x num_channels x board_x x board_y
-        s = F.relu(self.bn2(self.conv2(s)))                          # batch_size x num_channels x board_x x board_y
-        s = F.relu(self.bn3(self.conv3(s)))                          # batch_size x num_channels x (board_x-2) x (board_y-2)
-        s = F.relu(self.bn4(self.conv4(s)))                          # batch_size x num_channels x (board_x-4) x (board_y-4)
-        # s = s.view(-1, self.args.num_channels*(self.board_x-4)*(self.board_y-4))
-        s = s.view(-1, self.args.num_channels*(self.board_x)*(self.board_y))
+        a = F.relu(F.dropout1d(self.bn_fcA1(self.fcA1(s)), p=self.args.dropout, training=self.training))
+        b = F.relu(F.dropout1d(self.bn_fcB1(self.fcB1(s)), p=self.args.dropout, training=self.training))
 
-        s = F.dropout(
-            F.relu(
-                self.fc_bn1(
-                    self.fc1(s))), 
-            p=self.args.dropout, 
-            training=self.training)  # batch_size x 1024
-        s = F.dropout(F.relu(self.fc_bn2(self.fc2(s))), p=self.args.dropout, training=self.training)  # batch_size x 512
+        a = F.relu(F.dropout1d(self.bn_fcA2(self.fcA2(a)), p=self.args.dropout, training=self.training))
+        b = F.relu(F.dropout1d(self.bn_fcB2(self.fcB2(b)), p=self.args.dropout, training=self.training))
 
-        pi = self.fc3(s)                                                                         # batch_size x action_size
-        v = self.fc4(s)                                                                          # batch_size x 1
+        pi = self.fcA3(a)                                                                        
+        v = self.fcB3(b)                                                                       
 
         return F.log_softmax(pi, dim=1), torch.tanh(v)
 
 
+
+if __name__ == '__main__':
+    import os
+
+    from implemented_Game import ImplementedGame
+    from implemented_NeuralNet import args
+    from torchview import draw_graph
+
+
+    net = UTTTNet(ImplementedGame(), args)
+    print(net)
+    summary(net, ((2, 9, 9)))
+
+    # this is runable on windows only
+    os.environ["PATH"] += os.pathsep + './windows_10_msbuild_Release_graphviz-3.0.0-win32/Graphviz/bin'
+    draw_graph(net, input_size=((args.batch_size, 2, 9, 9)), save_graph=True, filename='graph')
