@@ -36,13 +36,13 @@ class UTTTNet(nn.Module):
         self.fcB3 = nn.Linear(512, 1)
 
     def forward(self, s):  
-        # s = s.view(-1, 2, self.board_x, self.board_y)            
+        s = s.view(-1, 2, self.board_x, self.board_y)      
 
         a = F.relu(F.dropout2d(self.bn_convA(self.convA(s)), p=self.args.dropout, training=self.training))                     
         b = F.relu(F.dropout2d(self.bn_convB(self.convB(s)), p=self.args.dropout, training=self.training))                     
 
         s = torch.cat((a, b), 1)
-        s = s.view(-1, args.num_channels*2*9)
+        s = s.view(-1, self.args.num_channels*2*9)
 
         a = F.relu(F.dropout1d(self.bn_fcA1(self.fcA1(s)), p=self.args.dropout, training=self.training))
         b = F.relu(F.dropout1d(self.bn_fcB1(self.fcB1(s)), p=self.args.dropout, training=self.training))
