@@ -10,7 +10,7 @@ import numpy as np
 
 from utils import *
 from NeuralNet import NeuralNet
-from OthelloNeuralNet import OthelloNNet as onnet
+from UTTTNet import UTTTNet as Unnet
 
 args = dotdict({
     'lr': 0.001,
@@ -24,7 +24,7 @@ args = dotdict({
 
 class NNetWrapper(NeuralNet):
     def __init__(self, game):
-        self.nnet = onnet(game, args)
+        self.nnet = Unnet(game, args)
         self.board_x, self.board_y = game.getBoardSize()
         self.action_size = game.getActionSize()
 

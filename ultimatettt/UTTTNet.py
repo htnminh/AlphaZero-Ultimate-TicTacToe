@@ -7,14 +7,14 @@ from implemented_Game import Game
 from NeuralNet import NeuralNet
 
 
-class OthelloNNet(nn.Module):
+class UTTTNet(nn.Module):
     def __init__(self, game:Game, args):
         # game params
         self.board_x, self.board_y = game.getBoardSize()
         self.action_size = game.getActionSize()
         self.args = args
 
-        super(OthelloNNet, self).__init__()
+        super(UTTTNet, self).__init__()
         self.conv1 = nn.Conv2d(1, args.num_channels, 3, stride=1, padding=1)
         self.conv2 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1, padding=1)
         # self.conv3 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1)
