@@ -100,7 +100,7 @@ class NNetWrapper(NeuralNet):
         board = board.view(1, self.board_x, self.board_y)
         self.nnet.eval()
         with torch.no_grad():
-            pi, v = self.nnet(torch.concatenate((board, mask_2d.view(1, self.board_x, self.board_y)), 0))
+            pi, v = self.nnet(torch.cat((board, mask_2d.view(1, self.board_x, self.board_y)), 0))
 
         # print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
         return torch.exp(pi).data.cpu().numpy()[0], v.data.cpu().numpy()[0]
