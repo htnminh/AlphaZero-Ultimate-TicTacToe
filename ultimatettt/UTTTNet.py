@@ -1,11 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchsummary import summary
 
 from implemented_Game import Game
-
-from NeuralNet import NeuralNet
 
 
 class UTTTNet(nn.Module):
@@ -60,6 +57,7 @@ class UTTTNet(nn.Module):
 if __name__ == '__main__':
     import os
 
+    from torchsummary import summary
     from implemented_Game import ImplementedGame
     from implemented_NeuralNet import args
     from torchview import draw_graph
