@@ -33,7 +33,7 @@ args = dotdict({
 
     'checkpoint': './temp/',
     'load_model': True,
-    'load_folder_file': ('/kaggle/input/ult-ttt-ver7-models', 'ver7.pth.tar'),
+    'load_folder_file': ('/kaggle/input/ult-ttt-ver8-models', 'model_ver7_eg_ver8.pth.tar'),
     'numItersForTrainExamplesHistory': 20,
 })
 
