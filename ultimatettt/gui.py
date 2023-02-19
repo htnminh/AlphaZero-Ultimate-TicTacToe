@@ -1,9 +1,16 @@
 import PySimpleGUI as sg
 import numpy as np
 
-from original_game import OriginalGame
+from original_game import LogicUtils, OriginalGame
+from implemented_Game import ImplementationUtils, ImplementedGame
+from implemented_NeuralNet import NNetWrapper
+from MCTS import MCTS
 from exceptions import GameException
+from main import args
 
+
+MODEL_FOLDER = 'ultttt ver7'
+MODEL_FILENAME = 'ver7.pth.tar'
 
 X_CHAR = '\u274C'
 O_CHAR = '\u26AB'
@@ -22,13 +29,16 @@ PAD = 11
 
 
 class GraphicInterface():
-    def __init__(self, full_gui=True):
+    def __init__(self, mode='Human vs Human', full_gui=True):
         # if set full_gui to False, shows a simpler GUI for report
+        self.mode = mode
         self.full_gui = full_gui
 
-        self.state = OriginalGame()
+        self.original_game = OriginalGame()
         self.layout = self.create_layout()
         self.window = self.create_window('Ultimate Tic-Tac-Toe')
+
+        print('Loading model, this should not take longer than a minute...')
         self.event_loop()
 
     def create_layout(self):
@@ -51,8 +61,13 @@ class GraphicInterface():
         layout.append([sg.Text('', key='textException', visible=self.full_gui)])
 
         layout.insert(0,
-            [sg.Button('New game', visible=self.full_gui),
-            sg.Button('Exit', visible=self.full_gui)]
+            [
+                sg.Button('Human vs Human', visible=self.full_gui),
+                sg.Button('Human vs AI', visible=self.full_gui),
+                sg.Button('AI vs Human', visible=self.full_gui),
+                sg.Button('AI vs AI', visible=self.full_gui),
+                sg.Button('Exit', visible=self.full_gui)
+            ]
         )
         # a temporary fix for a bug where the first button of a layout is highlighted
         # no matter what button the user clicks
@@ -85,7 +100,7 @@ class GraphicInterface():
     def update_all_areas_colors(self):
         for x in range(3):
             for y in range(3):
-                state_of_area = self.state.area[x, y]
+                state_of_area = self.original_game.area[x, y]
                 if state_of_area == 0:
                     self.update_area_color((x, y), None, BACKGROUND_COLOR)
                 elif np.isnan(state_of_area):
@@ -95,47 +110,81 @@ class GraphicInterface():
                     self.update_area_color((x, y), None, bkg_color_won)
 
         # change next area color
-        if self.state.curr_area is not None:
-            self.update_area_color(self.state.curr_area, None, NEXT_AREA_COLOR)
+        if self.original_game.curr_area is not None:
+            self.update_area_color(self.original_game.curr_area, None, NEXT_AREA_COLOR)
         else:
             for x in range(3):
                 for y in range(3):
-                    state_of_area = self.state.area[x, y]
+                    state_of_area = self.original_game.area[x, y]
                     if state_of_area == 0:
                         self.update_area_color((x, y), None, NEXT_AREA_COLOR)
 
     def play(self, xyij):
         x, y, i, j = xyij 
+        self.original_game.execute_move((x, y, i, j))
 
-        try:
-            self.state.execute_move((x, y, i, j))
-
-            # update played cell
-            self.update_button_text(
-                xyij, X_CHAR if self.state.curr_player==-1 else O_CHAR)
-            self.update_button_color(
-                xyij, X_COLOR if self.state.curr_player==-1 else O_COLOR, None)
-            self.update_all_areas_colors()
-            # update texts
-            self.window['textPlayerTurn'].update(X_TURN_STR if self.state.curr_player==1 else O_TURN_STR)
-            self.window['textException'].update('')
+        # update played cell
+        self.update_button_text(
+            xyij, X_CHAR if self.original_game.curr_player==-1 else O_CHAR)
+        self.update_button_color(
+            xyij, X_COLOR if self.original_game.curr_player==-1 else O_COLOR, None)
+        self.update_all_areas_colors()
+        # update texts
+        self.window['textPlayerTurn'].update(X_TURN_STR if self.original_game.curr_player==1 else O_TURN_STR)
+        self.window['textException'].update('')
             
-        except GameException as e:
-            self.window['textException'].update(e)
 
     def event_loop(self):
+        # for AI only
+        game = ImplementedGame()
+        net = NNetWrapper(game)
+        net.load_checkpoint(MODEL_FOLDER, MODEL_FILENAME)
+        mtcs = MCTS(game=game, nnet=net, args=args)
+
         while True:
             event, values = self.window.read()
 
             if event == sg.WIN_CLOSED or event == 'Exit':
                 self.window.close()
                 break
-            elif event == 'New game':
+
+            elif event == 'Human vs Human':
                 self.window.close()
                 self.__init__()
-            elif event.startswith('cell'):
-                xyij = tuple(map(int, event[-4:]))
-                self.play(xyij)
+
+            elif event == 'Human vs AI':
+                self.window.close()
+                self.__init__(mode='Human vs AI')
+
+
+            if self.mode == 'Human vs Human':
+                if event.startswith('cell'):
+                    xyij = tuple(map(int, event[-4:]))
+                    try:
+                        self.play(xyij)
+                    except GameException as e:
+                        self.window['textException'].update(e)
+
+            elif self.mode == 'Human vs AI':
+                
+                if event.startswith('cell'):
+                    xyij = tuple(map(int, event[-4:]))
+                    try:
+                        self.play(xyij)
+                        human_valid_move = True
+                    except GameException as e:
+                        self.window['textException'].update(e)
+                        human_valid_move = False
+                    
+                    if human_valid_move:
+                        state = ImplementationUtils().cell_state_4d_to_2d(self.original_game.cell_state)
+                        if game.getGameEnded(state, -1, self.original_game.curr_area) == 0:
+                            action = np.argmax(mtcs.getActionProb(
+                                *game.getCanonicalForm(state, -1, self.original_game.curr_area),
+                                temp=0
+                            ))
+                            self.play(LogicUtils().k_to_xyij(action))
+                    
 
 
 if __name__ == '__main__':
