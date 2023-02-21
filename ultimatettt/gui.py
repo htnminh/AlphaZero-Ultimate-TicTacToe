@@ -1,3 +1,5 @@
+import webbrowser
+
 import PySimpleGUI as sg
 import numpy as np
 
@@ -19,15 +21,20 @@ O_COLOR = 'blue'
 BACKGROUND_COLOR = 'white'
 X_WON_BACKGROUND_COLOR = 'lightpink'
 O_WON_BACKGROUND_COLOR = 'skyblue'
-DRAW_BACKGROUND_COLOR = 'darkgrey'  # yellow
+DRAW_BACKGROUND_COLOR = 'darkgrey'
 WIDTH = 3
 FONT_SIZE = 22
 NEXT_AREA_COLOR = 'lightgreen'
 X_TURN_STR = 'Player 1 turn as X'
 O_TURN_STR = 'Player 2 turn as O'
+DEFAULT_TEXT_EXCEPTION = 'None'
 PAD = 11
 
-INFO_TEXT = """Hi there~"""
+INFO_NAME = 'An Implementation of AlphaZero for Ultimate Tic-Tac-Toe'
+INFO_TEXT = \
+"""Hoang Tran Nhat Minh - Data Science and Artificial Intelligence (K65)
+School of Information and Communication Technology - Hanoi University of Science and Technology
+Lecturer: PhD. Tran Nguyen Ngoc"""
 
 
 class GraphicInterface():
@@ -66,23 +73,29 @@ class GraphicInterface():
                         )
                 layout[x][y] = sg.Frame('', layout[x][y], pad=PAD, border_width=0)
         
-        layout.append([sg.Text(X_TURN_STR, key='textPlayerTurn', visible=self.full_gui)])
-        layout.append([sg.Text('', key='textException', visible=self.full_gui)])
+        layout.append([
+            sg.Frame('Turn', [[
+                sg.Text(X_TURN_STR, key='textPlayerTurn', visible=self.full_gui, size=25)]]),
+            sg.Frame('Info', [[
+                sg.Text(DEFAULT_TEXT_EXCEPTION, key='textException', visible=self.full_gui, size=53)]])
+        ])
 
         layout.insert(0,
             [
-                sg.Button('Human vs Human', visible=self.full_gui),
-                sg.Button('Human vs AI', visible=self.full_gui),
-                sg.Button('AI vs Human', visible=self.full_gui),
-                sg.Button('AI vs AI', visible=self.full_gui),
-                sg.Button('Exit', visible=self.full_gui)
-            ]
-        )
+                sg.Frame('', [[
+                sg.Button('Human vs Human', visible=self.full_gui, focus=self.mode=='Human vs Human'),
+                sg.Button('Human vs AI', visible=self.full_gui, focus=self.mode=='Human vs AI'),
+                sg.Button('AI vs Human', visible=self.full_gui, focus=self.mode=='AI vs Human'),
+                sg.Button('AI vs AI', visible=self.full_gui, focus=self.mode=='AI vs AI'),
+                sg.Button('Open GitHub repository...'),
+                sg.Button('Exit', visible=self.full_gui),
+            ]], border_width=0, element_justification='center', size=(670, 30)
+        )])
         # a temporary fix for a bug where the first button of a layout is highlighted
         # no matter what button the user clicks
         layout.insert(0, [sg.Frame('', [[sg.Button()]], visible=False)])
 
-        layout.append([sg.Text(INFO_TEXT, visible=self.full_gui)])
+        layout.insert(0, [sg.Frame(INFO_NAME, [[sg.Text(INFO_TEXT, visible=self.full_gui, size=(25+53,3))]])])
 
         return layout
 
@@ -143,7 +156,7 @@ class GraphicInterface():
             self.update_all_areas_colors()
             # update texts
             self.window['textPlayerTurn'].update(X_TURN_STR if self.original_game.curr_player==1 else O_TURN_STR)
-            self.window['textException'].update('')
+            self.window['textException'].update(DEFAULT_TEXT_EXCEPTION)
             
 
     def event_loop(self):
@@ -161,6 +174,9 @@ class GraphicInterface():
                 self.window.close()
                 break
 
+            elif event == 'Open GitHub repository...':
+                webbrowser.open(r'https://github.com/htnminh/ultimate-tic-tac-toe')
+
             elif event == 'Human vs Human':
                 self.window.close()
                 self.__init__()
@@ -173,7 +189,6 @@ class GraphicInterface():
                 self.window.close()
                 self.__init__(mode='AI vs Human', start_event_loop=False)
 
-                # duplicated code, fix later
                 state = ImplementationUtils().cell_state_4d_to_2d(self.original_game.cell_state)
                 if game.getGameEnded(state, 1, self.original_game.curr_area) == 0:
                     action = np.argmax(mtcs.getActionProb(
@@ -188,7 +203,6 @@ class GraphicInterface():
                 self.window.close()
                 self.__init__(mode='AI vs AI', start_window=True, start_event_loop=False)
                 
-                # duplicated code, fix later
                 while True:
                     state = ImplementationUtils().cell_state_4d_to_2d(self.original_game.cell_state)
                     if game.getGameEnded(state, 1, self.original_game.curr_area) == 0:
