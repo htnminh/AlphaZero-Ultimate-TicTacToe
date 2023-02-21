@@ -32,10 +32,9 @@ PAD = 11
 
 PROJECT_NAME = 'An AlphaZero Implementation of Ultimate Tic-Tac-Toe'
 PROJECT_TEXT = \
-"""Hoang Tran Nhat Minh\t\t\tProject 1 of Semester 2022.1 
-Data Science and Artificial Intelligence (K65)\tHanoi University of Science and Technology
-Lecturer: PhD. Tran Nguyen Ngoc\t\tSchool of Information and Communication Technology
-"""
+"""Hoang Tran Nhat Minh\t\t\tData Science and Artificial Intelligence - K65
+Project 1 of Semester 2022.1\t\tHanoi University of Science and Technology
+Instructed by PhD. Tran Nguyen Ngoc\t\tSchool of Information and Communication Technology"""
 
 
 class GraphicInterface():
