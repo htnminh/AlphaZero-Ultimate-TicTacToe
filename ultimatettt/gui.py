@@ -30,15 +30,16 @@ O_TURN_STR = 'Player 2 turn as O'
 DEFAULT_TEXT_EXCEPTION = 'None'
 PAD = 11
 
-INFO_NAME = 'An Implementation of AlphaZero for Ultimate Tic-Tac-Toe'
-INFO_TEXT = \
-"""Hoang Tran Nhat Minh - Data Science and Artificial Intelligence (K65)
-School of Information and Communication Technology - Hanoi University of Science and Technology
-Lecturer: PhD. Tran Nguyen Ngoc"""
+PROJECT_NAME = 'An AlphaZero Implementation of Ultimate Tic-Tac-Toe'
+PROJECT_TEXT = \
+"""Hoang Tran Nhat Minh\t\t\tProject 1 of Semester 2022.1 
+Data Science and Artificial Intelligence (K65)\tHanoi University of Science and Technology
+Lecturer: PhD. Tran Nguyen Ngoc\t\tSchool of Information and Communication Technology
+"""
 
 
 class GraphicInterface():
-    def __init__(self, mode='Human vs Human',
+    def __init__(self, mode='Human vs AI',
                  start_window=True, start_event_loop=True,
                  full_gui=True, theme='DarkGrey6'):
         
@@ -54,7 +55,6 @@ class GraphicInterface():
             self.window = self.create_window('Ultimate Tic-Tac-Toe')
 
         if start_event_loop:
-            print('Loading model, this should not take longer than a minute...')
             self.event_loop()
 
     def create_layout(self):
@@ -76,7 +76,7 @@ class GraphicInterface():
         layout.append([
             sg.Frame('Turn', [[
                 sg.Text(X_TURN_STR, key='textPlayerTurn', visible=self.full_gui, size=25)]]),
-            sg.Frame('Info', [[
+            sg.Frame('Information', [[
                 sg.Text(DEFAULT_TEXT_EXCEPTION, key='textException', visible=self.full_gui, size=53)]])
         ])
 
@@ -95,7 +95,11 @@ class GraphicInterface():
         # no matter what button the user clicks
         layout.insert(0, [sg.Frame('', [[sg.Button()]], visible=False)])
 
-        layout.insert(0, [sg.Frame(INFO_NAME, [[sg.Text(INFO_TEXT, visible=self.full_gui, size=(25+53,3))]])])
+        layout.insert(0, [
+            sg.Frame(
+                PROJECT_NAME, [[sg.Text(PROJECT_TEXT, visible=self.full_gui, size=(82, 3))]],
+                title_location='n')
+        ])
 
         return layout
 
@@ -179,7 +183,7 @@ class GraphicInterface():
 
             elif event == 'Human vs Human':
                 self.window.close()
-                self.__init__()
+                self.__init__(mode='Human vs Human')
 
             elif event == 'Human vs AI':
                 self.window.close()
@@ -213,6 +217,10 @@ class GraphicInterface():
                         self.play(LogicUtils().k_to_xyij(action), update_window_elements=True)
                         self.window.refresh()
                     else:
+                        try:
+                            self.play((0,0,0,0))
+                        except GameException as e:
+                            self.window['textException'].update(e)
                         break
 
                     state = ImplementationUtils().cell_state_4d_to_2d(self.original_game.cell_state)
@@ -224,12 +232,14 @@ class GraphicInterface():
                         self.play(LogicUtils().k_to_xyij(action), update_window_elements=True)
                         self.window.refresh()
                     else:
+                        try:
+                            self.play((0,0,0,0))
+                        except GameException as e:
+                            self.window['textException'].update(e)
                         break
 
                 self.event_loop()
                 
-
-
             if self.mode == 'Human vs Human':
                 if event.startswith('cell'):
                     xyij = tuple(map(int, event[-4:]))
@@ -257,6 +267,11 @@ class GraphicInterface():
                                 temp=0
                             ))
                             self.play(LogicUtils().k_to_xyij(action))
+                        else:
+                            try:
+                                self.play((0,0,0,0))
+                            except GameException as e:
+                                self.window['textException'].update(e)
             
             elif self.mode == 'AI vs Human':
                 
