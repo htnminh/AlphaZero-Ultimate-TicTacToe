@@ -180,9 +180,6 @@ class GraphicInterface():
                 self.window.close()
                 self.__init__(mode='AI vs AI', start_window=True, start_event_loop=False)
                 
-                print('Please wait, the game is being played out...')
-                print('The result will be shown once the game is finished.')
-                print('NOTICE: The GUI window may shown as unresponsive, please wait!')
                 # duplicated code, fix later
                 while True:
                     state = ImplementationUtils().cell_state_4d_to_2d(self.original_game.cell_state)
@@ -192,8 +189,7 @@ class GraphicInterface():
                             temp=0
                         ))
                         self.play(LogicUtils().k_to_xyij(action), update_window_elements=True)
-
-                        print('X played:', LogicUtils().k_to_xyij(action), end='\t')
+                        self.window.refresh()
                     else:
                         break
 
@@ -204,8 +200,7 @@ class GraphicInterface():
                             temp=0
                         ))
                         self.play(LogicUtils().k_to_xyij(action), update_window_elements=True)
-
-                        print('O played:', LogicUtils().k_to_xyij(action))
+                        self.window.refresh()
                     else:
                         break
 
