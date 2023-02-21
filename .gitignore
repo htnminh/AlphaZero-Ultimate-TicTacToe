@@ -6,6 +6,4 @@
 **\__pycache__
 
 # examples files are very heavy (GBs) so they should be uploaded else where.
-*.examples
 *.tar.examples
-*.tar
