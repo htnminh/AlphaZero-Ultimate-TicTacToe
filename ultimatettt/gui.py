@@ -27,11 +27,17 @@ X_TURN_STR = 'Player 1 turn as X'
 O_TURN_STR = 'Player 2 turn as O'
 PAD = 11
 
+INFO_TEXT = """Hi there~"""
+
 
 class GraphicInterface():
-    def __init__(self, mode='Human vs Human', start_window=True, start_event_loop=True, full_gui=True):
-        # if set full_gui to False, shows a simpler GUI for report
+    def __init__(self, mode='Human vs Human',
+                 start_window=True, start_event_loop=True,
+                 full_gui=True, theme='DarkGrey6'):
+        
+        sg.theme(theme)
         self.mode = mode
+        # if set full_gui to False, shows a simpler GUI for report
         self.full_gui = full_gui
 
         self.original_game = OriginalGame()
@@ -75,6 +81,8 @@ class GraphicInterface():
         # a temporary fix for a bug where the first button of a layout is highlighted
         # no matter what button the user clicks
         layout.insert(0, [sg.Frame('', [[sg.Button()]], visible=False)])
+
+        layout.append([sg.Text(INFO_TEXT, visible=self.full_gui)])
 
         return layout
 
@@ -266,8 +274,6 @@ class GraphicInterface():
                     except GameException as e:
                         self.window['textException'].update(e)
             
-                    
-
 
 if __name__ == '__main__':
     GraphicInterface()
