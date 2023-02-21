@@ -11,7 +11,7 @@ from exceptions import GameException
 from main import args
 
 
-MODEL_FOLDER = 'ultttt ver22'
+MODEL_FOLDER = 'model ver22'
 MODEL_FILENAME = 'best.pth.tar'
 
 X_CHAR = '\u274C'
@@ -178,7 +178,7 @@ class GraphicInterface():
                 break
 
             elif event == 'Open GitHub repository...':
-                webbrowser.open(r'https://github.com/htnminh/ultimate-tic-tac-toe')
+                webbrowser.open(r'https://github.com/htnminh/AlphaZero-Ultimate-TicTacToe')
 
             elif event == 'Human vs Human':
                 self.window.close()
