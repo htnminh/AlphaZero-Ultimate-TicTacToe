@@ -29,17 +29,19 @@ PAD = 11
 
 
 class GraphicInterface():
-    def __init__(self, mode='Human vs Human', full_gui=True):
+    def __init__(self, mode='Human vs Human', start_window_loop=True, full_gui=True):
         # if set full_gui to False, shows a simpler GUI for report
         self.mode = mode
         self.full_gui = full_gui
 
         self.original_game = OriginalGame()
         self.layout = self.create_layout()
+        
         self.window = self.create_window('Ultimate Tic-Tac-Toe')
-
         print('Loading model, this should not take longer than a minute...')
-        self.event_loop()
+
+        if start_window_loop:
+            self.event_loop()
 
     def create_layout(self):
         layout = [[[[None for j in range(3)] for i in range(3)] for y in range(3)] for x in range(3)]
@@ -76,7 +78,7 @@ class GraphicInterface():
         return layout
 
     def create_window(self, window_name):
-        return sg.Window(window_name, self.layout)
+        return sg.Window(window_name, self.layout, finalize=True)
 
     def update_button_color(self, xyij, text_color, bkg_color):
         x, y, i, j = xyij
@@ -140,6 +142,7 @@ class GraphicInterface():
         net = NNetWrapper(game)
         net.load_checkpoint(MODEL_FOLDER, MODEL_FILENAME)
         mtcs = MCTS(game=game, nnet=net, args=args)
+        human_valid_move = True
 
         while True:
             event, values = self.window.read()
@@ -155,6 +158,21 @@ class GraphicInterface():
             elif event == 'Human vs AI':
                 self.window.close()
                 self.__init__(mode='Human vs AI')
+            
+            elif event == 'AI vs Human':
+                self.window.close()
+                self.__init__(mode='AI vs Human', start_window_loop=False)
+
+                # duplicated code, fix later
+                state = ImplementationUtils().cell_state_4d_to_2d(self.original_game.cell_state)
+                if game.getGameEnded(state, 1, self.original_game.curr_area) == 0:
+                    action = np.argmax(mtcs.getActionProb(
+                        *game.getCanonicalForm(state, 1, self.original_game.curr_area),
+                        temp=0
+                    ))
+                    self.play(LogicUtils().k_to_xyij(action))
+                    
+                self.event_loop()
 
 
             if self.mode == 'Human vs Human':
@@ -184,6 +202,27 @@ class GraphicInterface():
                                 temp=0
                             ))
                             self.play(LogicUtils().k_to_xyij(action))
+            
+            elif self.mode == 'AI vs Human':
+                
+                if event.startswith('cell'):
+                    xyij = tuple(map(int, event[-4:]))
+                    try:
+                        self.play(xyij)
+                        human_valid_move = True
+                    except GameException as e:
+                        self.window['textException'].update(e)
+                        human_valid_move = False
+                    
+                    if human_valid_move:
+                        state = ImplementationUtils().cell_state_4d_to_2d(self.original_game.cell_state)
+                        if game.getGameEnded(state, 1, self.original_game.curr_area) == 0:
+                            action = np.argmax(mtcs.getActionProb(
+                                *game.getCanonicalForm(state, 1, self.original_game.curr_area),
+                                temp=0
+                            ))
+                            self.play(LogicUtils().k_to_xyij(action))
+            
                     
 
 
