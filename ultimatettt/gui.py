@@ -29,7 +29,7 @@ PAD = 11
 
 
 class GraphicInterface():
-    def __init__(self, mode='Human vs Human', start_window_loop=True, full_gui=True):
+    def __init__(self, mode='Human vs Human', start_window=True, start_event_loop=True, full_gui=True):
         # if set full_gui to False, shows a simpler GUI for report
         self.mode = mode
         self.full_gui = full_gui
@@ -37,10 +37,11 @@ class GraphicInterface():
         self.original_game = OriginalGame()
         self.layout = self.create_layout()
         
-        self.window = self.create_window('Ultimate Tic-Tac-Toe')
-        print('Loading model, this should not take longer than a minute...')
+        if start_window:
+            self.window = self.create_window('Ultimate Tic-Tac-Toe')
 
-        if start_window_loop:
+        if start_event_loop:
+            print('Loading model, this should not take longer than a minute...')
             self.event_loop()
 
     def create_layout(self):
@@ -121,19 +122,20 @@ class GraphicInterface():
                     if state_of_area == 0:
                         self.update_area_color((x, y), None, NEXT_AREA_COLOR)
 
-    def play(self, xyij):
+    def play(self, xyij, update_window_elements=True):
         x, y, i, j = xyij 
         self.original_game.execute_move((x, y, i, j))
 
-        # update played cell
-        self.update_button_text(
-            xyij, X_CHAR if self.original_game.curr_player==-1 else O_CHAR)
-        self.update_button_color(
-            xyij, X_COLOR if self.original_game.curr_player==-1 else O_COLOR, None)
-        self.update_all_areas_colors()
-        # update texts
-        self.window['textPlayerTurn'].update(X_TURN_STR if self.original_game.curr_player==1 else O_TURN_STR)
-        self.window['textException'].update('')
+        if update_window_elements:
+            # update played cell
+            self.update_button_text(
+                xyij, X_CHAR if self.original_game.curr_player==-1 else O_CHAR)
+            self.update_button_color(
+                xyij, X_COLOR if self.original_game.curr_player==-1 else O_COLOR, None)
+            self.update_all_areas_colors()
+            # update texts
+            self.window['textPlayerTurn'].update(X_TURN_STR if self.original_game.curr_player==1 else O_TURN_STR)
+            self.window['textException'].update('')
             
 
     def event_loop(self):
@@ -161,7 +163,7 @@ class GraphicInterface():
             
             elif event == 'AI vs Human':
                 self.window.close()
-                self.__init__(mode='AI vs Human', start_window_loop=False)
+                self.__init__(mode='AI vs Human', start_event_loop=False)
 
                 # duplicated code, fix later
                 state = ImplementationUtils().cell_state_4d_to_2d(self.original_game.cell_state)
@@ -173,6 +175,42 @@ class GraphicInterface():
                     self.play(LogicUtils().k_to_xyij(action))
                     
                 self.event_loop()
+
+            elif event == 'AI vs AI':
+                self.window.close()
+                self.__init__(mode='AI vs AI', start_window=True, start_event_loop=False)
+                
+                print('Please wait, the game is being played out...')
+                print('The result will be shown once the game is finished.')
+                print('NOTICE: The GUI window may shown as unresponsive, please wait!')
+                # duplicated code, fix later
+                while True:
+                    state = ImplementationUtils().cell_state_4d_to_2d(self.original_game.cell_state)
+                    if game.getGameEnded(state, 1, self.original_game.curr_area) == 0:
+                        action = np.argmax(mtcs.getActionProb(
+                            *game.getCanonicalForm(state, 1, self.original_game.curr_area),
+                            temp=0
+                        ))
+                        self.play(LogicUtils().k_to_xyij(action), update_window_elements=True)
+
+                        print('X played:', LogicUtils().k_to_xyij(action), end='\t')
+                    else:
+                        break
+
+                    state = ImplementationUtils().cell_state_4d_to_2d(self.original_game.cell_state)
+                    if game.getGameEnded(state, -1, self.original_game.curr_area) == 0:
+                        action = np.argmax(mtcs.getActionProb(
+                            *game.getCanonicalForm(state, -1, self.original_game.curr_area),
+                            temp=0
+                        ))
+                        self.play(LogicUtils().k_to_xyij(action), update_window_elements=True)
+
+                        print('O played:', LogicUtils().k_to_xyij(action))
+                    else:
+                        break
+
+                self.event_loop()
+                
 
 
             if self.mode == 'Human vs Human':
@@ -222,6 +260,16 @@ class GraphicInterface():
                                 temp=0
                             ))
                             self.play(LogicUtils().k_to_xyij(action))
+            
+            elif self.mode == 'AI vs AI':
+
+                if event.startswith('cell'):
+                    xyij = tuple(map(int, event[-4:]))
+                    try:
+                        self.play(xyij)
+                        human_valid_move = True
+                    except GameException as e:
+                        self.window['textException'].update(e)
             
                     
 
