@@ -20,7 +20,7 @@ class ImplementationUtils():
             ndarray -- of size (9, 9)
 
         What it look like:
-            original_game.cell_state = np.arange(81).reshape((3,3,3,3))  # testing only
+            original_game.cell_state = np.arange(81).reshape((3,3,3,3))  # for testing only
             return ImplementationUtils().cell_state_to_2d(original_game.cell_state)
 
             [[ 0.  1.  2.  9. 10. 11. 18. 19. 20.]
@@ -257,17 +257,16 @@ class ImplementedGame(Game):
         except:
             print(board)
 
-# TEST
+    def get_mask_2d(self, board:np.ndarray, player, curr_area):
+        '''simply a 2d array of valid moves'''
+        cell_state = ImplementationUtils().cell_state_2d_to_4d(board)
+        binary_4d_array = OriginalGame()._get_valid_moves(cell_state, player, curr_area)
+
+        mask = ImplementationUtils().cell_state_4d_to_2d(binary_4d_array)
+        return mask
+    
+
 if __name__ == '__main__':
     igame = ImplementedGame()
-    symmforms = igame.getSymmetries(np.arange(81).reshape(9,9), np.arange(81), None)
-    # print(symmforms[-1])
-
-    # print()
-
-    igame = ImplementedGame()
-    symmforms = igame.getSymmetries(np.arange(81).reshape(9,9), np.arange(81), (1, 2))
-    # print(symmforms[-1])
-
-    igame = ImplementedGame()
-    # print(igame.stringRepresentation(np.arange(81).reshape(9,9), (1,2)))
+    next_board, next_player, next_curr_area = igame.getNextState(np.zeros((9, 9)), 1, 21, None)
+    print(igame.get_mask_2d(next_board, next_player, next_curr_area))

@@ -41,7 +41,7 @@ class Coach():
         uses temp=0.
 
         Returns:
-            trainExamples: a list of examples of the form (canonicalBoard, currPlayer, pi,v) (+ curr_area)
+            trainExamples: a list of examples of the form (canonicalBoard, currPlayer, pi,v) (+ curr_area) (+ mask_2d)
                            pi is the MCTS informed policy vector, v is +1 if
                            the player eventually won the game, else -1.
                            +
@@ -59,7 +59,9 @@ class Coach():
             pi = self.mcts.getActionProb(canonicalBoard, curr_area, temp=temp)
             sym = self.game.getSymmetries(canonicalBoard, pi, curr_area)
             for b, p, curr_area_ in sym:
-                trainExamples.append([b, self.curPlayer, p, None, curr_area_])
+                trainExamples.append([b, self.curPlayer, p, None,
+                                      curr_area_,
+                                      self.game.get_mask_2d(b, p, curr_area_)])
 
             action = np.random.choice(len(pi), p=pi)
             board, self.curPlayer, curr_area = self.game.getNextState(board, self.curPlayer, action, curr_area)
@@ -67,7 +69,7 @@ class Coach():
             r = self.game.getGameEnded(board, self.curPlayer, curr_area)
 
             if r != 0:
-                return [(x[0], x[2], r * ((-1) ** (x[1] != self.curPlayer)), x[4]) for x in trainExamples]  # x[4] = curr_area
+                return [(x[0], x[2], r * ((-1) ** (x[1] != self.curPlayer)), x[4], x[5]) for x in trainExamples]
 
     def learn(self):
         """

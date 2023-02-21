@@ -4,3 +4,6 @@
 *.toc
 
 **\__pycache__
+
+# examples files are very heavy (GBs) so they should be uploaded else where.
+*.tar.examples
