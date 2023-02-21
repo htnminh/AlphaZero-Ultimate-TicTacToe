@@ -9,8 +9,8 @@ from exceptions import GameException
 from main import args
 
 
-MODEL_FOLDER = 'ultttt ver7'
-MODEL_FILENAME = 'ver7.pth.tar'
+MODEL_FOLDER = 'ultttt ver22'
+MODEL_FILENAME = 'best.pth.tar'
 
 X_CHAR = '\u274C'
 O_CHAR = '\u26AB'
