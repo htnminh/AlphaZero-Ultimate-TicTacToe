@@ -1,21 +1,10 @@
-# Name
-Description
+# An AlphaZero Implementation of Ultimate Tic-Tac-Toe (with GUI)
+Run the `gui.py` script to start playing!
 
-Links to related repos
+![image](https://user-images.githubusercontent.com/82358580/224306004-fbf95745-2326-4e4c-8159-1fe77c6f5dbc.png)
 
-![preview](https://github.com/htnminh/python-template/blob/main/docs/preview.png)
 
-List of good files in repo:
-- []()
-- []()
-- []()
 
-## Chapter 1:
-Quick introduction about the chapter
-## Chapter 2:
-Quick introduction about the chapter
-## Chapter 3:
-Quick introduction about the chapter
 
 # Docs
 - [Other files]()
